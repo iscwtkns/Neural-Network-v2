@@ -1,4 +1,4 @@
-import numpy as np, activation_function as af, layer
+import layer
 
 class Network:
     def __init__(self, n_inputs):

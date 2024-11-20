@@ -1,6 +1,6 @@
 from manim import *
-import activation_function as af
-import network
+
+
 
 class NetworkVisualization(Scene):
     def construct(self):

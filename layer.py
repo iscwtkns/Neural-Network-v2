@@ -1,4 +1,4 @@
-import numpy as np, neuron, activation_function as af
+import neuron
 
 class Layer:
     '''

@@ -1,4 +1,4 @@
-import numpy as np, activation_function as af
+import numpy as np
 class Neuron:
     '''
     Stores basic operations fundamental to all neuron types
