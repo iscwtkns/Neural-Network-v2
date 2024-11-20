@@ -11,7 +11,7 @@ class activation_function:
         return 1/(1+np.exp(-x))
     @staticmethod
     def sigmoidDerivative(x):
-        return sigmoid(x)*(1-sigmoid(x))
+        return activation_function.sigmoid(x)*(1-activation_function.sigmoid(x))
     def relu(x):
         '''
         Acts as the zero function on negative values and identity on positive values.
