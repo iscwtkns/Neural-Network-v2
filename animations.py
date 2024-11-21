@@ -1,13 +1,12 @@
 from manim import *
 
 
-
 class NetworkVisualization(Scene):
     def construct(self):
-        from main import neural_net
+        from main import visual_net
 
         # Convert the network directly into a Manim graph
-        self.create_network_graph(neural_net)
+        self.create_network_graph(visual_net)
 
         # Wait before ending the animation
         self.wait(2)

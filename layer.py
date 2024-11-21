@@ -1,4 +1,4 @@
-import neuron
+import neuron, math_utils as mu, numpy as np
 
 class Layer:
     '''
@@ -9,8 +9,10 @@ class Layer:
         Creates a new layer of a specified number of neurons with particular number of inputs and specified activation 
         function
         '''
-        self.neurons = [neuron.Neuron(n_inputs, activation_function=activation_function) for i in range(n_neurons)]
+        self.n_inputs = n_inputs
+        self.neurons = [neuron.Neuron(int(n_inputs), activation_function=activation_function) for i in range(n_neurons)]
         self.activation_function = activation_function
+        self.assign_weights()
     def forward(self,inputs):
         '''
         Uses forward function in neuron class on all neurons inside the layer, stores the outputs as a separate variable
@@ -31,5 +33,17 @@ class Layer:
         for neuron in self.neurons:
             neuron.adjustBias(learn_step)
             neuron.adjustWeights(learn_step)
-
+    def assign_weights(self):
+        if self.activation_function == mu.activation_function.sigmoid:
+            # Xavier Weight Initialisation
+            limit = np.sqrt(6/(len(self.neurons)+self.n_inputs))
+            weight_matrix = np.random.uniform(-limit,limit,(len(self.neurons),self.n_inputs))
+        if self.activation_function == mu.activation_function.relu:
+            # He Weight Initialisation
+            std_dev = np.sqrt(2/self.n_inputs)
+            weight_matrix = np.random.normal(0,std_dev,(len(self.neurons),self.n_inputs))
+        else:
+            weight_matrix = np.random.random((len(self.neurons),self.n_inputs))
+        for i in range(len(weight_matrix)):
+            self.neurons[i].weights = weight_matrix[i]
 

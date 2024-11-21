@@ -33,6 +33,7 @@ class data_function:
             prediction = np.array(prediction)
             actual = np.array(actual)
             return np.mean((prediction-actual)**2)
+    @staticmethod
     def costDerivative(prediction, actual):
         if (isinstance(prediction, (float, int)) and isinstance(actual, (float, int))):
             return 2*(prediction-actual)
@@ -40,4 +41,11 @@ class data_function:
             prediction = np.array(prediction)
             actual = np.array(actual)
             return np.mean(2*(prediction-actual))
-            
+class array_function:
+    @staticmethod
+    def strip(x):
+        '''
+        Takes in the annoying n x 1 x 1 matrix to return a list of length n
+        '''
+        new_x = []
+        return np.array(i[0] for i in x)
