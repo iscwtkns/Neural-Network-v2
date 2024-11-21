@@ -8,8 +8,9 @@ neural_net.addLayer(1)
 
 inputX = [i/5 for i in range(50)]
 inputY = [i**2/25 for i in range(50)]
-neural_net.learn(inputX[3],inputY[3],1)
-for layer in neural_net.layers:
-    print(layer.error_vector)
-    for neuron in layer.neurons:
-        print(neuron.error_term)
+neural_net.forward(inputX[3])
+initial_cost = mu.data_function.cost(neural_net.outputs, inputY[3])
+neural_net.learn(inputX[3],inputY[3],0.1)
+neural_net.forward(inputX[3])
+new_cost = mu.data_function.cost(neural_net.outputs, inputY[3])
+print("Initial Cost:", initial_cost, "New Cost:", new_cost)

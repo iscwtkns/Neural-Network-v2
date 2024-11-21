@@ -27,6 +27,9 @@ class Layer:
         self.error_vector = error_vector
         for i in range(len(self.neurons)):
             self.neurons[i].error_term = error_vector[i]
-    
+    def adjust_weights_and_biases(self, learn_step):
+        for neuron in self.neurons:
+            neuron.adjustBias(learn_step)
+            neuron.adjustWeights(learn_step)
 
 

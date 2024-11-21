@@ -46,10 +46,13 @@ class Network:
         '''
         self.forward(inputs)
         self.calculate_error_terms(desired_output)
+        for layer in self.layers:
+            layer.adjust_weights_and_biases(learn_step)
     
     def calculate_error_terms(self, desired_output):
         '''
-        Uses the currently saved input, activation and weightedOutput variable from each neuron to evaluate 
+        Uses the currently saved input, activation and weightedOutput variable from each neuron to evaluate error terms
+        and set them
         '''
         # Set error terms of the output layer
         output_error_vector = self.calculate_output_error_vector(desired_output)

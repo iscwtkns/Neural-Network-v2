@@ -31,7 +31,10 @@ class Neuron:
         Adjusts weights according to the error term. Need to run calculate_error_terms from network.py first
         '''
         for i in range(len(self.weights)):
-            self.weights[i] -= learn_step*self.error_term*self.inputs[i]
+            if (isinstance(self.inputs,(float,int))):
+                self.weights[i] -= learn_step*self.error_term*self.inputs
+            else:
+                self.weights[i] -= learn_step*self.error_term*self.inputs[i]
     def adjustBias(self, learn_step):
         '''
         Adjusts bias according to the error term, need to run calculate_error_terms from network.py first
