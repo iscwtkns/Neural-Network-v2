@@ -22,6 +22,8 @@ class activation_function:
             return 0
         else:
             return 1
+    def constant(x):
+        return 1
 class data_function:
     @staticmethod
     def cost(prediction, actual):
@@ -31,5 +33,11 @@ class data_function:
             prediction = np.array(prediction)
             actual = np.array(actual)
             return np.mean((prediction-actual)**2)
-            
+    def costDerivative(prediction, actual):
+        if (isinstance(prediction, (float, int)) and isinstance(actual, (float, int))):
+            return 2*(prediction-actual)
+        else:
+            prediction = np.array(prediction)
+            actual = np.array(actual)
+            return np.mean(2*(prediction-actual))
             

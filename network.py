@@ -1,4 +1,4 @@
-import layer, numpy as np
+import layer, math_utils as mu
 
 class Network:
     def __init__(self, n_inputs):
@@ -22,7 +22,7 @@ class Network:
         '''
         for layer in self.layers:
             layer.forward(inputs)
-            inputs = layer.outputs
+            inputs = layer.activation
         self.outputs = inputs
     def massForward(self, inputList):
         '''
@@ -39,3 +39,40 @@ class Network:
             for j in range(len(self.outputs)):
                 output[i * len(self.outputs) + j] = self.outputs[j]
         return output
+    def learn(self, inputs, desired_output, learn_step):
+        '''
+        Takes in inputs that match length of input neurons and output matching length of output neurons.
+        Computes the error term for each neuron and then adjusts weight and bias according to their derivatives
+        '''
+        self.forward(inputs)
+        self.calculate_error_terms(desired_output)
+    
+    def calculate_error_terms(self, desired_output):
+        '''
+        Uses the currently saved input, activation and weightedOutput variable from each neuron to evaluate 
+        '''
+        # Set error terms of the output layer
+        output_error_vector = self.calculate_output_error_vector(desired_output)
+        self.layers[-1].assign_error_terms(output_error_vector)
+
+        #Calculate output error vectors and assign to rest of layers sequentially
+        for i in range(len(self.layers)-1):
+            output_error_vector = []
+            for j in range(len(self.layers[-2-i].neurons)):
+                error_term = 0
+                for k in range(len(self.layers[-1-i].neurons)):
+                    error_term += self.layers[-1-i].neurons[k].error_term*self.layers[-1-i].neurons[k].weights[j]
+                output_error_vector.append(error_term)
+            self.layers[-2-i].assign_error_terms(output_error_vector)
+        
+
+    
+    def calculate_output_error_vector(self, desired_output):
+        output_error_vector = []
+        for i in range(len(self.layers[-1].neurons)):
+            neuron = self.layers[-1].neurons[i]
+            if isinstance(desired_output, (float, int)):
+                output_error_vector.append(mu.data_function.costDerivative(neuron.activation,desired_output)*neuron.activation_derivative(neuron.weightedOutput))
+            else:
+                output_error_vector.append(mu.data_function.costDerivative(neuron.activation,desired_output[i])*neuron.activation_derivative(neuron.weightedOutput))
+        return output_error_vector

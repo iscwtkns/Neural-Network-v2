@@ -8,6 +8,8 @@ neural_net.addLayer(1)
 
 inputX = [i/5 for i in range(50)]
 inputY = [i**2/25 for i in range(50)]
-predictions = neural_net.massForward(inputX)
-cost = mu.data_function.cost(predictions, inputY)
-print("Input Values =", inputX, ", Predictions =", predictions, ", Actual =", inputY, ", Cost =", cost)
+neural_net.learn(inputX[3],inputY[3],1)
+for layer in neural_net.layers:
+    print(layer.error_vector)
+    for neuron in layer.neurons:
+        print(neuron.error_term)
