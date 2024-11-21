@@ -19,10 +19,15 @@ class Neuron:
         bias term. The activation function is defined inside the activation_function class and is initialised with
         creation.
         '''
+        print(inputs)
         if isinstance(inputs, (float, int)):
             self.inputs = inputs
         else:
-            self.inputs = [float(input) for input in inputs]
+            if isinstance(inputs[0], (float,int)):
+                self.inputs = [float(input) for input in inputs]
+            else:
+                self.inputs = [float(input[0]) for input in inputs]
+
         self.weightedOutput = np.dot(self.weights, inputs)+self.bias
         self.activation = self.activation_function(self.weightedOutput)
 
