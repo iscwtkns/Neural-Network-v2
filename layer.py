@@ -42,6 +42,10 @@ class Layer:
             # He Weight Initialisation
             std_dev = np.sqrt(2/self.n_inputs)
             weight_matrix = np.random.normal(0,std_dev,(len(self.neurons),self.n_inputs))
+        if self.activation_function == mu.activation_function.leakyRelu:
+            # He Weight Initialisation
+            std_dev = np.sqrt(2/self.n_inputs)
+            weight_matrix = np.random.normal(0,std_dev,(len(self.neurons),self.n_inputs))
         else:
             weight_matrix = np.random.random((len(self.neurons),self.n_inputs))
         for i in range(len(weight_matrix)):

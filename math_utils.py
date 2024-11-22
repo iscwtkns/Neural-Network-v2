@@ -17,11 +17,17 @@ class activation_function:
         Acts as the zero function on negative values and identity on positive values.
         '''
         return np.maximum(0,x)
+
+    
     def reluDerivative(x):
         if (x<0):
             return 0
         else:
             return 1
+    def leakyRelu(x):
+        return x if x > 0 else 0.01*x
+    def leakyReluDerivative(x):
+        return 1 if x > 0 else 0.01
     def constant(x):
         return 1
 class data_function:
@@ -30,9 +36,10 @@ class data_function:
         if (isinstance(prediction, (float, int)) and isinstance(actual, (float, int))):
             return (prediction - actual) ** 2
         else:
-            prediction = np.array(prediction)
-            actual = np.array(actual)
-            return np.mean((prediction-actual)**2)
+            cost = 0
+            for i in range(len(prediction)):
+                cost += (prediction[i]-actual[i]) ** 2
+            return cost/len(prediction)
     @staticmethod
     def costDerivative(prediction, actual):
         if (isinstance(prediction, (float, int)) and isinstance(actual, (float, int))):

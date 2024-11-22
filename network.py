@@ -48,41 +48,47 @@ class Network:
     def learn(self, inputs, desired_output, learn_step):
         '''
         Takes in inputs that match length of input neurons and output matching length of output neurons.
-        Computes the error term for each neuron and then adjusts weight and bias according to their derivatives
+        Computes the error term for each neuron and then stores derivatives in array for each neuron
         '''
         self.forward(inputs)
         self.calculate_error_terms(desired_output)
         for layer in self.layers:
-            layer.adjust_weights_and_biases(learn_step)
+            for neuron in layer.neurons:
+                for i in range(len(neuron.weights)):
+                    if isinstance(neuron.inputs, (float,int)):
+                        neuron.weight_derivatives[i].append(neuron.error_term*neuron.inputs)
+                    else:
+                        neuron.weight_derivatives[i].append(neuron.error_term*neuron.inputs[i])
+                neuron.bias_derivatives.append(neuron.error_term)
     
-    def normaliseData(self, x, y):
-        maximum = np.maximum(np.max(x),np.max(y))
-        x = [x[i]/maximum for i in range(len(x))]
-        y = [y[i]/maximum for i in range(len(x))]
-        self.normalisation_factor = (float) (1/maximum)
-        return x,y
-
-    def invertScaling(self, x):
-        return [x[i]/self.normalisation_factor for i in range(len(x))]
-    def scale(self, x):
-        return [x[i]*self.normalisation_factor for i in range(len(x))]
    
-    def train(self, inputs, desired_outputs, learn_step, epochs, announcer=False, learn_decay =0.99):
+    def train(self, inputs, desired_outputs, learn_step, epochs, announcer=False, learn_decay =0.99, batch_size = 10):
         '''
         Takes in a list of inputs corresponding to a large sample of data. Uses the learn function iteratively to 
-        learn over the entire data set for a number of epochs. Data does not need to be normalised, as this is done
-        at the start of the training function. The normalisation constant is saved to later undo.
+        learn over the entire data set for a number of epochs. Data does need to be normalised.
         '''
-        inputs, desired_outputs = self.normaliseData(inputs, desired_outputs)
-        inputs = [inputs[i*self.n_inputs:(i+1)*self.n_inputs] for i in range(len(inputs)//self.n_inputs)]
-        outputs = [desired_outputs[i*self.n_inputs:(i+1)*self.n_inputs] for i in range(len(inputs)//self.n_inputs)]
+    
+        inputs = [inputs[i*self.n_inputs:(i+1)*self.n_inputs][0] for i in range(len(inputs)//self.n_inputs)]
+        outputs = [desired_outputs[i*self.n_inputs:(i+1)*self.n_inputs][0] for i in range(len(inputs)//self.n_inputs)]
         for i in range(epochs):
+            for layer in self.layers:
+                for neuron in layer.neurons:
+                    neuron.weight_derivatives = [[] for i in range(len(neuron.weights))]
+                    neuron.bias_derivatives = []   
             for j in range(len(inputs)):
+                #Sets up large gradient arrays that can be averaged to find cost gradients
                 self.learn(inputs[j],outputs[j],learn_step)
+            for layer in self.layers:
+                for neuron in layer.neurons:
+                    neuron.weight_derivatives =[(np.mean(neuron.weight_derivatives[i])) for i in range(len(neuron.weights))]
+                    neuron.bias_derivatives = np.mean(neuron.bias_derivatives)
+                layer.adjust_weights_and_biases(learn_step)
             predictions = self.massForward(inputs)
             cost = mu.data_function.cost(predictions, inputs)
             if announcer:
                 print("Epoch Completed, cost function at:",cost)
+                
+                        
             learn_step *= learn_decay
 
 
@@ -106,6 +112,7 @@ class Network:
                     error_term += neuron.error_term*neuron.weights[j]
                 error_term *= currentNeuron.activation_derivative(currentNeuron.weighted_output)
                 error_vector.append(error_term)
+            
             self.layers[-2-i].assign_error_terms(error_vector)
         
     def calculate_output_error_vector(self, desired_output):
@@ -114,8 +121,8 @@ class Network:
         for i in range(len(self.layers[-1].neurons)):
             neuron = self.layers[-1].neurons[i]
             if isinstance(desired_output, (float, int)):
-                print("Cost Derivative:",mu.data_function.costDerivative(neuron.activation,desired_output))
-                print("Activation Derivative:",neuron.activation_derivative)
+                #print("Cost Derivative:",mu.data_function.costDerivative(neuron.activation,desired_output))
+                #print("Activation Derivative:",neuron.activation_derivative)
                 output_error_vector.append(mu.data_function.costDerivative(neuron.activation,desired_output)*neuron.activation_derivative(neuron.weighted_output))
             else:
                 output_error_vector.append(mu.data_function.costDerivative(neuron.activation,desired_output[i])*neuron.activation_derivative(neuron.weighted_output))
@@ -127,37 +134,37 @@ class Network:
         Scales inputs to the correct magnitude and then propagates through the network, rescales before outputting. Network
         should be trained before use.
         '''
-        input = self.scale(input)
         if (isinstance(input, (float,int)) or len(input) == self.n_inputs):
             self.forward(input)
-            predictions = self.invertScaling(self.outputs)
+            predictions = self.outputs
             return predictions
         else:
             predictions = []
             for value in input:
                 self.forward(value)
-                predictions.append(self.invertScaling(self.outputs))
+                predictions += self.outputs
             return predictions
     
-    def calculateNumericalDerivatives(self, actual):
+    def calculateNumericalDerivatives(self,input, actual):
         for i in range(len(self.layers)):
             layer = self.layers[i]
             for j in range(len(layer.neurons)):
                 neuron = layer.neurons[j]
-                neuron.numerical_weight_derivatives = []*len(neuron.weights)
+                neuron.numerical_weight_derivatives = [0]*len(neuron.weights)
                 for k in range(len(neuron.weights)):
-                    neuron.weights[k] += 0.00001
-                    prediction = self.predict(self.invertScaling(self.inputs))
+                    neuron.weights[k] += 1e-3
+                    prediction = self.predict(input)
                     loss1 = mu.data_function.cost(prediction, actual)
-                    neuron.weights[k] -= 0.00002
-                    prediction = self.predict(self.invertScaling(self.inputs))
+                    neuron.weights[k] -= 2e-3
+                    prediction = self.predict(input)
                     loss2 = mu.data_function.cost(prediction,actual)
-                    neuron.weights[k] += 0.00001
-                    neuron.numerical_weight_derivatives[k] = (loss1 - loss2) / 0.00002
-                neuron.bias += 0.00001
-                predictions = self.predict(self.invertScaling(self.inputs))
-                loss1 = self.outputs
-                neuron.bias -= 0.00002
-                predictions = self.predict(self.invertScaling(self.inputs))
-                loss2 = self.outputs
-                neuron.numerical_bias_derivative = (loss1 - loss2) / 0.00002
+                    neuron.weights[k] += 1e-3
+                    neuron.numerical_weight_derivatives[k] = (loss1 - loss2) / 2e-3
+                neuron.bias += 1e-3
+                predictions = self.predict(input)
+                loss1 = mu.data_function.cost(predictions, actual)
+                neuron.bias -= 2e-3
+                predictions = self.predict(input)
+                loss2 = mu.data_function.cost(predictions, actual)
+                neuron.bias += 1e-3
+                neuron.numerical_bias_derivative = (loss1 - loss2) / 2e-3
