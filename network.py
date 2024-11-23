@@ -45,7 +45,7 @@ class Network:
                 output[i * len(self.outputs) + j] = self.outputs[j]
         return output
     
-    def learn(self, inputs, desired_output, learn_step):
+    def learn(self, inputs, desired_output):
         '''
         Takes in inputs that match length of input neurons and output matching length of output neurons.
         Computes the error term for each neuron and then stores derivatives in array for each neuron
@@ -69,6 +69,7 @@ class Network:
         '''
     
         inputs = [inputs[i*self.n_inputs:(i+1)*self.n_inputs][0] for i in range(len(inputs)//self.n_inputs)]
+        
         outputs = [desired_outputs[i*self.n_inputs:(i+1)*self.n_inputs][0] for i in range(len(inputs)//self.n_inputs)]
         for i in range(epochs):
             for layer in self.layers:
@@ -77,11 +78,12 @@ class Network:
                     neuron.bias_derivatives = []   
             for j in range(len(inputs)):
                 #Sets up large gradient arrays that can be averaged to find cost gradients
-                self.learn(inputs[j],outputs[j],learn_step)
+                self.learn(inputs[j],outputs[j])
             for layer in self.layers:
                 for neuron in layer.neurons:
                     neuron.weight_derivatives =[(np.mean(neuron.weight_derivatives[i])) for i in range(len(neuron.weights))]
                     neuron.bias_derivatives = np.mean(neuron.bias_derivatives)
+                    neuron.error_term = neuron.bias_derivatives
                 layer.adjust_weights_and_biases(learn_step)
             predictions = self.massForward(inputs)
             cost = mu.data_function.cost(predictions, inputs)
@@ -126,6 +128,7 @@ class Network:
                 output_error_vector.append(mu.data_function.costDerivative(neuron.activation,desired_output)*neuron.activation_derivative(neuron.weighted_output))
             else:
                 output_error_vector.append(mu.data_function.costDerivative(neuron.activation,desired_output[i])*neuron.activation_derivative(neuron.weighted_output))
+        
         return output_error_vector
     
     

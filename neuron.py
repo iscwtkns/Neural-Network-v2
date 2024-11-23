@@ -13,6 +13,8 @@ class Neuron:
             self.bias = 0.01*np.random.random()
         self.weights = [float(0.0)]*n_inputs
         self.activation_function = activation_function or (lambda x : x)
+        self.weight_derivatives = [[] for i in range(len(self.weights))]
+        self.bias_derivatives = []   
         acfun = self.activation_function
         if acfun == mu.activation_function.sigmoid:
             self.activation_derivative = mu.activation_function.sigmoidDerivative

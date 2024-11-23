@@ -13,6 +13,11 @@ class Layer:
         self.neurons = [neuron.Neuron(int(n_inputs), activation_function=activation_function) for i in range(n_neurons)]
         self.activation_function = activation_function
         self.assign_weights()
+    def get_error_vector(self):
+        error_vector = []
+        for neuron in self.neurons:
+            error_vector.append(neuron.error_term)
+
     def forward(self,inputs):
         '''
         Uses forward function in neuron class on all neurons inside the layer, stores the outputs as a separate variable
@@ -47,7 +52,7 @@ class Layer:
             std_dev = np.sqrt(2/self.n_inputs)
             weight_matrix = np.random.normal(0,std_dev,(len(self.neurons),self.n_inputs))
         else:
-            weight_matrix = np.random.random((len(self.neurons),self.n_inputs))
+            weight_matrix = np.random.normal(0,1,(len(self.neurons),self.n_inputs))
         for i in range(len(weight_matrix)):
             self.neurons[i].weights = weight_matrix[i]
 
